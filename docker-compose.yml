@@ -1,0 +1,47 @@
+services:
+  # node
+  # node:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/backend/Dockerfile
+  #   ports:
+  #     - ${APP_PORT:-3000}:3000
+  #   volumes:
+  #     - wms_poc:/app/node_modules
+  #   networks:
+  #     - wms-monorepo
+  #   depends_on:
+  #     - mysql-wms-monorepo
+  #     - rabbitmq-wms-monorepo
+
+  # mysql
+  mysql-wms-monorepo:
+    image: mysql:8.0.31-oracle
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-wms_poc}
+      MYSQL_USER: ${DB_USER:-wms_poc}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-wms_poc}
+    ports:
+      - ${DB_PORT:-3306}:3306
+    volumes:
+      - wms_poc_mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - wms-monorepo
+
+  # rabbitmq
+  rabbitmq-wms-monorepo:
+    image: rabbitmq:3.10.11-management
+    ports:
+      - ${RABBITMQ_PORT:-15672}:15672
+      - ${RABBITMQ_MANAGEMENT_PORT:-15673}:15673
+    networks:
+      - wms-monorepo
+
+networks:
+  wms-monorepo:
+    driver: bridge
+
+volumes:
+  wms_poc_mysql_data:
